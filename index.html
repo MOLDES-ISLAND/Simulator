@@ -2,523 +2,894 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>헤드헌팅 시뮬레이터</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 
   <style>
 
+    /* =========================
+       색상 / 공통 변수
+    ========================= */
+    :root {
+      --bg: #121212;
+      --panel: #1c1c1c;
+      --panel-2: #242424;
+      --line: #353535;
+      --text: #e9e9e9;
+      --muted: #8c8c8c;
+      --accent: #ffd400;
+
+      --r6: #ff9a2e;
+      --r5: #ffd400;
+      --r4: #c9a9ff;
+      --r3: #d6d6d6;
+
+      --cut: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-
-      background-color: #1f1f1f;
-      color: white;
-      text-align: center;
-      font-family: sans-serif;
-
       margin: 0;
-      padding: 30px;
-
+      min-height: 100vh;
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      color: var(--text);
+      font-family: "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
     }
-
-
-
-    h1 {
-
-      margin-bottom: 20px;
-
-    }
-
-
-
-    /* 전체 레이아웃 */
-    #main-container {
-
-      display: flex;
-
-      justify-content: center;
-
-      align-items: stretch;
-
-      gap: 30px;
-
-    }
-
-
-    #gacha-screen {
-
-      display: none;
-
-    }
-
-
-    /* 왼쪽 */
-    #left-panel {
-
-      display: flex;
-
-      flex-direction: column;
-
-      align-items: flex-start;
-
-    }
-
-
-
-    /* 버튼 영역 */
-    #button-group {
-
-      margin-bottom: 20px;
-
-    }
-
-
 
     button {
-
-      padding: 12px 24px;
-
-      font-size: 18px;
-
-      border: none;
-
-      border-radius: 10px;
-
-      cursor: pointer;
-
-      margin: 5px;
-
+      font-family: inherit;
     }
 
-
-
-    /* 결과창 */
-    #result {
-
-      width: fit-content;
-
-      display: grid;
-
-      grid-template-columns: repeat(5, 150px);
-
-      column-gap: 10px;
-
-      row-gap: 10px;
-
-      background-color: #2a2a2a;
-
-      padding: 20px;
-
-      border-radius: 15px;
-
-      white-space: nowrap;
-
+    .en {
+      font-weight: 900;
+      letter-spacing: 0.06em;
     }
 
-
-
-    /* 카드 */
-    .card {
-
-      width: 150px;
-
-      height: 300px;
-
-      border-radius: 15px;
-
-      overflow: hidden;
-
+    /* 노란/검정 경고 줄무늬 */
+    .hazard {
+      height: 6px;
+      background: repeating-linear-gradient(
+        -45deg,
+        var(--accent) 0 10px,
+        #111 10px 20px
+      );
     }
 
-
-
-    /* 이미지 */
-    .card img {
-
-      width: 150px;
-
-      height: 300px;
-
-      object-fit: cover;
-
-      display: block;
-
+    /* 모서리 잘린 패널 */
+    .cut {
+      clip-path: polygon(
+        0 0,
+        calc(100% - var(--cut)) 0,
+        100% var(--cut),
+        100% 100%,
+        var(--cut) 100%,
+        0 calc(100% - var(--cut))
+      );
     }
 
-
-
-    /* 3성 */
-    .three {
-
-      background-color: white;
-
+    /* =========================
+       상단 헤더
+    ========================= */
+    header {
+      background: #0c0c0c;
+      border-bottom: 1px solid var(--line);
     }
 
-
-
-    /* 4성 */
-    .four {
-
-      background-color: #a3a2f5;
-
-    }
-
-
-
-    /* 5성 */
-    .five {
-
-      background-color: #ffe680;
-
-    }
-
-
-
-    /* 6성 */
-    .six {
-
-      background-color: #ffd700;
-
-    }
-
-
-
-    /* 오른쪽 패널 */
-    #right-panel {
-
-      width: 300px;
-
-      background-color: #2a2a2a;
-
-      padding: 20px;
-
-      border-radius: 15px;
-
-      text-align: left;
-
-    }
-
-
-
-    /* 정보 영역 */
-    #top-info {
-
+    .header-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 18px 24px;
       display: flex;
-
+      align-items: flex-end;
       justify-content: space-between;
-
-      align-items: center;
-
-      margin-bottom: 20px;
-
-      font-size: 18px;
-
-      font-weight: bold;
-
-    }
-    
-
-
-
-    #pity {
-
-      color: #ffd700;
-
+      gap: 16px;
     }
 
-
-
-    /* 수집 목록 */
-    #collection {
-
-      margin-top: 20px;
-
-      font-size: 20px;
-
-      line-height: 1.8;
-
+    .title-block .title {
+      font-size: 46px;
+      line-height: 0.9;
+      color: #fff;
     }
 
-
-
-    .section-title {
-
-      margin-top: 20px;
-
-      margin-bottom: 10px;
-
-      font-size: 24px;
-
-      font-weight: bold;
-
+    .title-block .title span {
+      color: var(--accent);
     }
 
-
-
-    .six-text {
-
-      color: #ffd700;
-
+    .title-block .subtitle {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
     }
 
-
-
-    .five-text {
-
-      color: #ffe680;
-
+    .header-code {
+      text-align: right;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.3;
     }
 
-
-
-    #six-list {
-
-      color: #ffd700;
-
+    .header-code b {
+      color: var(--accent);
+      font-weight: normal;
     }
 
-
-
-    #five-list {
-
-      color: #ffe680;
-
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 60px;
     }
 
-    #current-banner {
-
-      margin-top: 10px;
-
-      font-size: 18px;
-
-      color: #ffd700;
-
-      font-weight: bold;
-
-    }
-
-    #button-group {
-
-      width: 100%;
-
-      margin-bottom: 20px;
-
-    }
-
-    #top-buttons {
-
+    /* 섹션 라벨 */
+    .section-label {
       display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
 
-      justify-content: flex-start;
+    .section-label .en {
+      font-size: 26px;
+      color: #fff;
+    }
 
+    .section-label .ko {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .section-label .mark {
+      width: 6px;
+      height: 22px;
+      background: var(--accent);
+    }
+
+    /* =========================
+       배너 선택 화면
+    ========================= */
+    #banner-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .banner-card {
+      position: relative;
+      text-align: left;
+      background: linear-gradient(135deg, #262626 0%, #1a1a1a 100%);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: var(--text);
+      font-family: inherit;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .banner-card:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.15);
+    }
+
+    .banner-card .banner-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 18px;
+      background: #0e0e0e;
+      border-left: 6px solid var(--accent);
+    }
+
+    .banner-card .banner-index {
+      font-size: 28px;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .banner-card .banner-tag {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .banner-card .banner-body {
+      padding: 16px 18px 20px;
+      border-left: 6px solid #333;
+    }
+
+    .banner-card .banner-name {
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 14px;
+      color: #fff;
+    }
+
+    .pickup-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-top: 6px;
+      font-size: 15px;
+    }
+
+    .pickup-row .rank {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 6px;
+      color: #111;
+    }
+
+    .pickup-row.six .rank { background: var(--r6); }
+    .pickup-row.five .rank { background: var(--r5); }
+
+    .pickup-row.six .names { color: var(--r6); font-weight: 700; }
+    .pickup-row.five .names { color: var(--r5); }
+
+    .banner-card .enter {
+      position: absolute;
+      right: 18px;
+      bottom: 16px;
+      font-size: 18px;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .banner-card:hover .enter { opacity: 1; }
+
+    /* 공지사항 */
+    #notice-box {
+      margin-top: 36px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    #notice-box .notice-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      background: #0e0e0e;
+    }
+
+    #notice-box .notice-head .en {
+      font-size: 22px;
+      color: var(--accent);
+    }
+
+    #notice-box .notice-head .ko {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    #notice-content {
+      padding: 18px 20px;
+      font-size: 15px;
+      line-height: 1.9;
+      color: #cfcfcf;
+    }
+
+    /* =========================
+       뽑기 화면
+    ========================= */
+    #gacha-screen { display: none; }
+
+    #gacha-topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
     }
 
     #back-button {
-
-      font-size: 16px;
-
-      padding: 8px 16px;
-
+      background: #0e0e0e;
+      color: var(--text);
+      border: 1px solid var(--line);
+      padding: 10px 18px;
+      font-size: 15px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
     }
 
-    #gacha-buttons {
-
-      margin-top: 10px;
-
+    #back-button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
-    #notice-box {
-    
-      width: 600px;
-    
-      margin: 30px auto;
-    
-      background-color: #2a2a2a;
-    
-      border-radius: 15px;
-    
-      padding: 20px;
-    
-      text-align: left;
-    
+    #current-banner {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 18px;
+      background: #0e0e0e;
+      border-left: 6px solid var(--accent);
     }
 
-    #notice-title {
-
-      font-size: 28px;
-    
-      font-weight: bold;
-    
-      margin-bottom: 15px;
-    
-      color: #ffd700;
-    
+    #current-banner .en {
+      font-size: 18px;
+      color: var(--muted);
     }
 
-
-    #notice-content {
-
+    #current-banner-name {
       font-size: 20px;
-    
-      line-height: 1.8;
-    
-      color: #dddddd;
-    
+      font-weight: 900;
+      color: #fff;
     }
-    
 
+    #main-container {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* 결과 영역 */
+    #result-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    #result-panel .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 18px;
+      background: #0e0e0e;
+    }
+
+    #result-panel .panel-head .en {
+      font-size: 22px;
+      color: #fff;
+    }
+
+    #pickup-info {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    #pickup-info .six { color: var(--r6); }
+    #pickup-info .five { color: var(--r5); }
+
+    #result {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      padding: 18px;
+      min-height: 300px;
+    }
+
+    #result .empty {
+      grid-column: 1 / -1;
+      align-self: center;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    #result .empty .en {
+      display: block;
+      font-size: 40px;
+      color: #2e2e2e;
+      margin-bottom: 4px;
+    }
+
+    /* 카드 */
+    .card {
+      --rc: var(--r3);
+      position: relative;
+      aspect-ratio: 1 / 2;
+      background: linear-gradient(180deg, #2b2b2b 0%, #161616 100%);
+      overflow: hidden;
+      border-bottom: 4px solid var(--rc);
+      opacity: 0;
+      animation: cardIn 0.35s ease forwards;
+    }
+
+    .card.r6 { --rc: var(--r6); }
+    .card.r5 { --rc: var(--r5); }
+    .card.r4 { --rc: var(--r4); }
+    .card.r3 { --rc: var(--r3); }
+
+    /* 희귀도 빛 번짐 */
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 100%, var(--rc) 0%, transparent 65%);
+      opacity: 0.35;
+      z-index: 0;
+    }
+
+    .card.r3::before { opacity: 0.12; }
+
+    .card.r6 {
+      box-shadow: 0 0 18px rgba(255, 154, 46, 0.55);
+    }
+
+    .card.r6::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.35) 50%, transparent 60%);
+      transform: translateX(-100%);
+      animation: shine 2.4s ease-in-out infinite;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .card img {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card .fallback {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--rc);
+      z-index: 1;
+    }
+
+    .card.no-img .fallback { display: flex; }
+
+    .card .card-info {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 18px 6px 6px;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.9));
+      z-index: 2;
+    }
+
+    .card .stars {
+      color: var(--rc);
+      font-size: 11px;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .card .name {
+      margin-top: 3px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #fff;
+    }
+
+    .card .pickup-tag {
+      position: absolute;
+      top: 6px;
+      left: 0;
+      padding: 2px 8px 1px 6px;
+      font-size: 13px;
+      background: var(--rc);
+      color: #111;
+      z-index: 2;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%); }
+      60%, 100% { transform: translateX(100%); }
+    }
+
+    /* 뽑기 버튼 */
+    #gacha-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 0 18px 18px;
+    }
+
+    .pull-btn {
+      --cut: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 190px;
+      padding: 10px 22px 12px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: filter 0.15s, transform 0.1s;
+    }
+
+    .pull-btn:hover { filter: brightness(1.12); }
+    .pull-btn:active { transform: scale(0.97); }
+
+    .pull-btn .en {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .pull-btn .label {
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .pull-btn.single {
+      background: #e9e9e9;
+      color: #111;
+    }
+
+    .pull-btn.multi {
+      background: var(--accent);
+      color: #111;
+    }
+
+    /* 오른쪽 패널 */
+    #right-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    #right-panel .panel-head {
+      padding: 10px 18px;
+      background: #0e0e0e;
+    }
+
+    #right-panel .panel-head .en {
+      font-size: 22px;
+      color: #fff;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      background: var(--panel);
+      padding: 14px 18px;
+    }
+
+    .stat .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .stat .stat-value {
+      font-size: 34px;
+      line-height: 1.1;
+      color: #fff;
+    }
+
+    #pity-box {
+      padding: 14px 18px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    #pity-box .row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    #pity-rate {
+      color: var(--r6);
+      font-weight: 700;
+    }
+
+    .pity-bar {
+      position: relative;
+      height: 10px;
+      background: #0e0e0e;
+      border: 1px solid var(--line);
+    }
+
+    /* 반천장 시작 지점 표시 */
+    .pity-bar .marker {
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      left: calc(50 / 98 * 100%);
+      width: 2px;
+      background: var(--muted);
+    }
+
+    #pity-fill {
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      transition: width 0.25s ease, background-color 0.25s;
+    }
+
+    #pity-fill.active {
+      background: var(--r6);
+    }
+
+    #pity-box .hint {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #reset-button {
+      display: block;
+      width: calc(100% - 36px);
+      margin: 14px 18px;
+      padding: 9px;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    #reset-button:hover {
+      border-color: #ff5a5a;
+      color: #ff5a5a;
+    }
+
+    #collection {
+      padding: 0 18px 18px;
+    }
+
+    .collection-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 14px 0 8px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .collection-title .bar {
+      width: 4px;
+      height: 16px;
+    }
+
+    .collection-title.six { color: var(--r6); }
+    .collection-title.six .bar { background: var(--r6); }
+    .collection-title.five { color: var(--r5); }
+    .collection-title.five .bar { background: var(--r5); }
+
+    .collection-list {
+      font-size: 14px;
+    }
+
+    .collection-list .item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 10px;
+      background: var(--panel-2);
+      margin-bottom: 3px;
+      border-left: 2px solid transparent;
+    }
+
+    .collection-list .item.is-pickup {
+      border-left-color: var(--accent);
+    }
+
+    .collection-list .item .cnt {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .collection-list .none {
+      color: #555;
+      font-size: 13px;
+      padding: 4px 0;
+    }
+
+    #six-list .item .nm { color: var(--r6); }
+    #five-list .item .nm { color: var(--r5); }
+
+    /* =========================
+       반응형
+    ========================= */
+    @media (max-width: 1000px) {
+      #main-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .header-inner { padding: 14px 16px; }
+      .title-block .title { font-size: 36px; }
+      .header-code { display: none; }
+      main { padding: 20px 16px 40px; }
+      #banner-list { grid-template-columns: 1fr; }
+      #result { gap: 5px; padding: 10px; min-height: 200px; }
+      .card .name { display: none; }
+      .card .stars { font-size: 8px; }
+      .card .pickup-tag { font-size: 10px; padding: 1px 4px; }
+      #gacha-buttons { padding: 0 10px 12px; }
+      .pull-btn { min-width: 0; flex: 1; padding: 8px 14px 10px; }
+      .pull-btn .label { font-size: 16px; }
+      #current-banner-name { font-size: 16px; }
+    }
 
   </style>
 </head>
 
 <body>
 
-  <!-- 배너 선택 화면 -->
-  <div id="banner-screen">
+  <header>
+    <div class="header-inner">
+      <div class="title-block">
+        <div class="title en">HEAD<span>HUNTING</span></div>
+        <div class="subtitle">헤드헌팅 시뮬레이터</div>
+      </div>
+      <div class="header-code en">
+        RECRUITMENT SYSTEM<br>
+        <b>STATUS : ONLINE</b>
+      </div>
+    </div>
+    <div class="hazard"></div>
+  </header>
 
-    <h1>원하는 픽업 헤드헌팅을 선택하세요</h1>
+  <main>
 
-    <button onclick="selectBanner('banner1')">
-      영원히 울리는 선율
-    </button>
+    <!-- 배너 선택 화면 -->
+    <div id="banner-screen">
 
-    <button onclick="selectBanner('banner2')">
-      홍화만개
-    </button>
+      <div class="section-label">
+        <div class="mark"></div>
+        <span class="en">SELECT BANNER</span>
+        <span class="ko">원하는 픽업 헤드헌팅을 선택하세요</span>
+      </div>
 
-    <button onclick="selectBanner('banner3')">
-      그리움의 의미
-    </button>
+      <div id="banner-list"></div>
 
-    <button onclick="selectBanner('banner4')">
-      너와 나의 거리
-    </button>
+      <div id="notice-box" class="cut">
 
-    <button onclick="selectBanner('banner5')">
-      눈한쪽가린여자스페셜헤드헌팅
-    </button>
+        <div class="notice-head">
+          <span class="en">NOTICE</span>
+          <span class="ko">공지사항</span>
+        </div>
 
-    <button onclick="selectBanner('banner6')">
-      달빛은 아직 지지 않고
-    </button>
+        <div id="notice-content">
+          ■ 최종 업데이트 : 261026 <br>
+          ■ 업데이트 사항 : <br>
+          &nbsp;&nbsp;- 새로운 픽업 배너 [ 深秋殘夢 심추잔몽 ] 추가 <br>
+          &nbsp;&nbsp;- UI 디자인 리뉴얼 <br>
+          ■ 버그 발견 시 @vosxjawhgdk 로 제보 부탁드립니다. <br>
+          ■ 테스트 버전입니다. 가볍게 즐겨주세요!
+          ■ 직접 쓴 코드를 기반으로 AI에게 코드 정리를 부탁하였습니다. AI 사용에 불편하신 분들은 사용을 재고해주세요.
+        </div>
 
-  </div>
+      </div>
 
-  <div id="notice-box">
-
-    <div id="notice-title">
-      공지사항
     </div>
 
-  <div id="notice-content">
 
-    ■ 최종 업데이트 : 260923 <br>
-    ■ 업데이트 사항 : <br>
-      -  새로운 픽업 배너 추가 <br>
-    ■ 버그 발견 시 @vosxjawhgdk 로 제보 부탁드립니다. <br>
-    ■ 테스트 버전입니다. 가볍게 즐겨주세요!
+    <!-- 뽑기 화면 -->
+    <div id="gacha-screen">
 
-    </div>
+      <div id="gacha-topbar">
 
-  </div>
+        <button id="back-button" class="cut" onclick="goToBannerSelect()">
+          ← 뒤로가기
+        </button>
 
-  <div id="gacha-screen">
-    <h1>헤드헌팅 시뮬레이터</h1>
+        <div id="current-banner">
+          <span class="en">PICK UP</span>
+          <span id="current-banner-name">없음</span>
+        </div>
+
+      </div>
 
 
-    <div id="main-container">
+      <div id="main-container">
 
-      <!-- 왼쪽 -->
-      <div id="left-panel">
+        <!-- 왼쪽 : 결과 -->
+        <div id="result-panel">
 
-        <div id="button-group">
-
-          <div id="top-buttons">
-
-            <button id="back-button"
-              onclick="goToBannerSelect()">
-
-              ← 뒤로가기
-
-            </button>
-
+          <div class="panel-head">
+            <span class="en">RESULT</span>
+            <div id="pickup-info"></div>
           </div>
 
-
-          <div id="current-banner">
-
-            현재 픽업 :
-            없음
-
-          </div>
-
+          <div id="result"></div>
 
           <div id="gacha-buttons">
 
-            <button onclick="gacha()">
-              1회 뽑기
+            <button class="pull-btn single cut" onclick="gacha()">
+              <span class="en">HEADHUNT ×1</span>
+              <span class="label">1회 헤드헌팅</span>
             </button>
 
-            <button onclick="gacha10()">
-              10회 뽑기
+            <button class="pull-btn multi cut" onclick="gacha10()">
+              <span class="en">HEADHUNT ×10</span>
+              <span class="label">10회 헤드헌팅</span>
             </button>
 
           </div>
 
-
-
-
         </div>
 
 
-        <!-- 결과 -->
-        <div id="result">
-          결과가 여기에 표시됩니다.
-        </div>
+        <!-- 오른쪽 : 기록 -->
+        <div id="right-panel">
 
-      </div>
-
-
-
-      <!-- 오른쪽 -->
-      <div id="right-panel">
-
-        <!-- 정보 -->
-        <div id="top-info">
-
-
-          <div id="count">
-            총 뽑기 : 0
+          <div class="panel-head">
+            <span class="en">RECORD</span>
           </div>
 
-          <div id="pity">
-            반천장 : 0
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="stat-label">총 뽑기</div>
+              <div class="stat-value en" id="count">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">반천장 스택</div>
+              <div class="stat-value en" id="pity">0</div>
+            </div>
           </div>
 
-        </div>
-
-
-        <!-- 초기화 -->
-        <button onclick="resetGacha()">
-          초기화
-        </button>
-
-
-
-        <!-- 수집 목록 -->
-        <div id="collection">
-
-          <div class="section-title six-text">
-            6성
+          <div id="pity-box">
+            <div class="row">
+              <span>현재 6성 확률</span>
+              <span id="pity-rate">2%</span>
+            </div>
+            <div class="pity-bar">
+              <div id="pity-fill"></div>
+              <div class="marker"></div>
+            </div>
+            <div class="hint">50회부터 6성 확률이 1회당 2%씩 증가</div>
           </div>
 
-          <div id="six-list">
-            없음
-          </div>
+          <button id="reset-button" onclick="resetGacha()">
+            기록 초기화
+          </button>
 
+          <div id="collection">
 
-          <div class="section-title five-text">
-            5성
-          </div>
+            <div class="collection-title six">
+              <span class="bar"></span> 6성 오퍼레이터
+            </div>
+            <div id="six-list" class="collection-list"></div>
 
-          <div id="five-list">
-            없음
+            <div class="collection-title five">
+              <span class="bar"></span> 5성 오퍼레이터
+            </div>
+            <div id="five-list" class="collection-list"></div>
+
           </div>
 
         </div>
@@ -527,7 +898,7 @@
 
     </div>
 
-  </div>
+  </main>
 
 
   <script>
@@ -537,1018 +908,181 @@
     // =========================
 
     let totalCount = 0;
-
     let pityStack = 0;
-
     let collection6 = [];
-
     let collection5 = [];
 
+    let pickup6 = [];
+    let pickup5 = [];
 
 
     // =========================
     // 캐릭터 데이터
+    // (이름만 추가하면 이미지 경로는 images/이름.png 로 자동 지정)
     // =========================
 
-    const characters = {
+    const characterNames = {
 
       "6성": [
-
-        {
-          name: "아피아체레",
-          image: "images/아피아체레.png"
-        },
-
-        {
-          name: "트라고디아",
-          image: "images/트라고디아.png"
-        },
-
-        {
-          name: "팬텀",
-          image: "images/팬텀.png"
-        },
-
-        {
-          name: "루",
-          image: "images/루.png"
-        },
-
-        {
-          name: "위",
-          image: "images/위.png"
-        },
-
-        {
-          name: "티엔",
-          image: "images/티엔.png"
-        },
-
-        {
-          name: "총웨",
-          image: "images/총웨.png"
-        },
-
-        {
-          name: "베이",
-          image: "images/베이.png"
-        },
-
-        {
-          name: "시에",
-          image: "images/시에.png"
-        },
-
-        {
-          name: "미오소티스",
-          image: "images/미오소티스.png"
-        },
-
-        {
-          name: "왕",
-          image: "images/왕.png"
-        },
-
-        {
-          name: "우민",
-          image: "images/우민.png"
-        },
-
-        {
-          name: "리",
-          image: "images/리.png"
-        },
-
-        {
-          name: "골든글로우",
-          image: "images/골든글로우.png"
-        },
-
-        {
-          name: "피아메타",
-          image: "images/피아메타.png"
-        },
-
-        {
-          name: "혼",
-          image: "images/혼.png"
-        },
-
-        {
-          name: "아이린",
-          image: "images/아이린.png"
-        },
-
-        {
-          name: "에벤홀츠",
-          image: "images/에벤홀츠.png"
-        },
-
-        {
-          name: "도로시",
-          image: "images/도로시.png"
-        },
-
-        {
-          name: "파죰카",
-          image: "images/파죰카.png"
-        },
-
-        {
-          name: "무에나",
-          image: "images/무에나.png"
-        },
-
-        {
-          name: "스테인리스",
-          image: "images/스테인리스.png"
-        },
-
-        {
-          name: "페넌스",
-          image: "images/페넌스.png"
-        },
-
-        {
-          name: "리드 더 플레임 섀도우",
-          image: "images/리드 더 플레임 섀도우.png"
-        },
-
-        {
-          name: "린",
-          image: "images/린.png"
-        },
-
-        {
-          name: "치우바이",
-          image: "images/치우바이.png"
-        },
-
-        {
-          name: "이네스",
-          image: "images/이네스.png"
-        },
-
-        {
-          name: "오올헤약",
-          image: "images/오올헤약.png"
-        },
-
-        {
-          name: "이그제큐터 디 엑스 포에데레",
-          image: "images/이그제큐터 디 엑스 포에데레.png"
-        },
-
-        {
-          name: "스와이어 디 엘리건트 위트",
-          image: "images/스와이어 디 엘리건트 위트.png"
-        },
-
-        {
-          name: "티폰",
-          image: "images/티폰.png"
-        },
-
-        {
-          name: "제시카 더 리버레이티드",
-          image: "images/제시카 더 리버레이티드.png"
-        },
-
-        {
-          name: "외드레르",
-          image: "images/외드레르.png"
-        },
-
-        {
-          name: "비비아나",
-          image: "images/비비아나.png"
-        },
-
-        {
-          name: "데겐블레허",
-          image: "images/데겐블레허.png"
-        },
-
-        {
-          name: "레이",
-          image: "images/레이.png"
-        },
-
-        {
-          name: "좌락",
-          image: "images/좌락.png"
-        },
-
-        {
-          name: "아스카론",
-          image: "images/아스카론.png"
-        },
-
-        {
-          name: "로고스",
-          image: "images/로고스.png"
-        },
-
-        {
-          name: "울피아누스",
-          image: "images/울피아누스.png"
-        },
-
-        {
-          name: "나란투야",
-          image: "images/나란투야.png"
-        },
-
-        {
-          name: "님프",
-          image: "images/님프.png"
-        },
-
-        {
-          name: "비나 빅토리아",
-          image: "images/비나 빅토리아.png"
-        },
-
-        {
-          name: "불피스폴리아",
-          image: "images/불피스폴리아.png"
-        },
-
-        {
-          name: "쏜즈 더 로드스타",
-          image: "images/쏜즈 더 로드스타.png"
-        },
-
-        {
-          name: "블레이즈 디 이그나이팅 스파크",
-          image: "images/블레이즈 디 이그나이팅 스파크.png"
-        },
-
-        {
-          name: "엔텔레키아",
-          image: "images/엔텔레키아.png"
-        },
-
-        {
-          name: "네크라스",
-          image: "images/네크라스.png"
-        },
-
-        {
-          name: "Mon3tr",
-          image: "images/Mon3tr.png"
-        },
-
-        {
-          name: "르무엔",
-          image: "images/르무엔.png"
-        },
-
-        {
-          name: "레이즈 더 썬더브링어",
-          image: "images/레이즈 더 썬더브링어.png"
-        },
-
-        {
-          name: "하루카",
-          image: "images/하루카.png"
-        },
-
-        {
-          name: "만트라",
-          image: "images/만트라.png"
-        },
-
-        {
-          name: "프라마닉스 더 프레리타",
-          image: "images/프라마닉스 더 프레리타.png"
-        }
-
+        "아피아체레", "트라고디아", "팬텀", "루", "위", "티엔", "총웨", "베이", "시에",
+        "미오소티스", "왕", "우민", "리", "골든글로우", "피아메타", "혼", "아이린",
+        "에벤홀츠", "도로시", "파죰카", "무에나", "스테인리스", "페넌스",
+        "리드 더 플레임 섀도우", "린", "치우바이", "이네스", "오올헤약",
+        "이그제큐터 디 엑스 포에데레", "스와이어 디 엘리건트 위트", "티폰",
+        "제시카 더 리버레이티드", "외드레르", "비비아나", "데겐블레허", "레이", "좌락",
+        "아스카론", "로고스", "울피아누스", "나란투야", "님프", "비나 빅토리아",
+        "불피스폴리아", "쏜즈 더 로드스타", "블레이즈 디 이그나이팅 스파크", "엔텔레키아",
+        "네크라스", "Mon3tr", "르무엔", "레이즈 더 썬더브링어", "하루카", "만트라",
+        "프라마닉스 더 프레리타", "슈", "리천"
       ],
-
-
 
       "5성": [
-
-        {
-          name: "위스퍼레인",
-          image: "images/위스퍼레인.png"
-        },
-
-
-        {
-          name: "블랙나이트",
-          image: "images/블랙나이트.png"
-        },
-
-        {
-          name: "퀘르쿠스",
-          image: "images/퀘르쿠스.png"
-        },
-
-        {
-          name: "카제마루",
-          image: "images/카제마루.png"
-        },
-
-        {
-          name: "락락",
-          image: "images/락락.png"
-        },
-
-        {
-          name: "윈드플릿",
-          image: "images/윈드플릿.png"
-        },
-
-        {
-          name: "히비스커스 더 퓨리파이어",
-          image: "images/히비스커스 더 퓨리파이어.png"
-        },
-
-        {
-          name: "그레이 더 라이트닝베어러",
-          image: "images/그레이 더 라이트닝베어러.png"
-        },
-
-        {
-          name: "칸타빌레",
-          image: "images/칸타빌레.png"
-        },
-
-        {
-          name: "프로바이조",
-          image: "images/프로바이조.png"
-        },
-
-        {
-          name: "파프리카",
-          image: "images/파프리카.png"
-        },
-
-        {
-          name: "루나컵",
-          image: "images/루나컵.png"
-        },
-
-        {
-          name: "아르모니",
-          image: "images/아르모니.png"
-        },
-
-        {
-          name: "파이어휘슬",
-          image: "images/파이어휘슬.png"
-        },
-
-        {
-          name: "윈드차임스",
-          image: "images/윈드차임스.png"
-        },
-
-        {
-          name: "시멘트",
-          image: "images/시멘트.png"
-        },
-
-        {
-          name: "멜라나이트",
-          image: "images/멜라나이트.png"
-        },
-
-        {
-          name: "스푸리아",
-          image: "images/스푸리아.png"
-        },
-
-        {
-          name: "폰사이러스",
-          image: "images/폰사이러스.png"
-        },
-
-        {
-          name: "산탈라",
-          image: "images/산탈라.png"
-        },
-
-        {
-          name: "아몬드",
-          image: "images/아몬드.png"
-        },
-
-        {
-          name: "벤델라",
-          image: "images/벤델라.png"
-        },
-
-        {
-          name: "베이스라인",
-          image: "images/베이스라인.png"
-        },
-
-        {
-          name: "레토",
-          image: "images/레토.png"
-        },
-
-        {
-          name: "워미",
-          image: "images/워미.png"
-        },
-
-        {
-          name: "그레인버즈",
-          image: "images/그레인버즈.png"
-        },
-
-        {
-          name: "라 플루마",
-          image: "images/라 플루마.png"
-        },
-
-        {
-          name: "테킬라",
-          image: "images/테킬라.png"
-        },
-
-        {
-          name: "아로마",
-          image: "images/아로마.png"
-        },
-
-        {
-          name: "팽 더 파이어 샤픈드",
-          image: "images/팽 더 파이어 샤픈드.png"
-        },
-
-        {
-          name: "루실라",
-          image: "images/루실라.png"
-        },
-
-        {
-          name: "샌드레코너",
-          image: "images/샌드레코너.png"
-        },
-
-        {
-          name: "미틈",
-          image: "images/미틈.png"
-        },
-
-        {
-          name: "보빙",
-          image: "images/보빙.png"
-        },
-
-        {
-          name: "피구리노",
-          image: "images/피구리노.png"
-        },
-
-        {
-          name: "테크노",
-          image: "images/테크노.png"
-        },
-
-        {
-          name: "서퍼",
-          image: "images/서퍼.png"
-        },
-
-        {
-          name: "노웰",
-          image: "images/노웰.png"
-        },
-
-        {
-          name: "울페나이트",
-          image: "images/울페나이트.png"
-        },
-
-        {
-          name: "알라나",
-          image: "images/알라나.png"
-        },
-
-        {
-          name: "그레이스베어러",
-          image: "images/그레이스베어러.png"
-        },
-
-        {
-          name: "티피",
-          image: "images/티피.png"
-        },
-
-        {
-          name: "레코드키퍼",
-          image: "images/레코드키퍼.png"
-        },
-
-        {
-          name: "키치세이",
-          image: "images/키치세이.png"
-        },
-
-        {
-          name: "베토치키",
-          image: "images/베토치키.png"
-        },
-
-        {
-          name: "스노우헌터",
-          image: "images/스노우헌터.png"
-        },
-
-        {
-          name: "싱주",
-          image: "images/싱주.png"
-        },
-
-        {
-          name: "강 씨",
-          image: "images/강 씨.png"
-        }, 
-
-        {
-          name: "레이즈",
-          image: "images/레이즈.png"
-        }, 
-
-        {
-          name: "샬렘",
-          image: "images/샬렘.png"
-        },
-
-        {
-          name: "델핀",
-          image: "images/델핀.png"
-        },
-
-        {
-          name: "오로라",
-          image: "images/오로라.png"
-        }
-
+        "위스퍼레인", "블랙나이트", "퀘르쿠스", "카제마루", "락락", "윈드플릿",
+        "히비스커스 더 퓨리파이어", "그레이 더 라이트닝베어러", "칸타빌레", "프로바이조",
+        "파프리카", "루나컵", "아르모니", "파이어휘슬", "윈드차임스", "시멘트",
+        "멜라나이트", "스푸리아", "폰사이러스", "산탈라", "아몬드", "벤델라",
+        "베이스라인", "레토", "워미", "그레인버즈", "라 플루마", "테킬라", "아로마",
+        "팽 더 파이어 샤픈드", "루실라", "샌드레코너", "미틈", "보빙", "피구리노",
+        "테크노", "서퍼", "노웰", "울페나이트", "알라나", "그레이스베어러", "티피",
+        "레코드키퍼", "키치세이", "베토치키", "스노우헌터", "싱주", "강 씨", "레이즈",
+        "샬렘", "델핀", "오로라", "완칭"
       ],
-
-
 
       "4성": [
-
-        {
-          name: "헤이즈",
-          image: "images/헤이즈.png"
-        },
-
-        {
-          name: "기타노",
-          image: "images/기타노.png"
-        },
-
-        {
-          name: "제시카",
-          image: "images/제시카.png"
-        },
-
-        {
-          name: "메테오",
-          image: "images/메테오.png"
-        },
-
-        {
-          name: "시라유키",
-          image: "images/시라유키.png"
-        },
-
-        {
-          name: "스캐빈저",
-          image: "images/스캐빈저.png"
-        },
-
-        {
-          name: "비그나",
-          image: "images/비그나.png"
-        },
-
-        {
-          name: "도베르만",
-          image: "images/도베르만.png"
-        },
-
-        {
-          name: "마토이마루",
-          image: "images/마토이마루.png"
-        },
-
-        {
-          name: "프로스트리프",
-          image: "images/프로스트리프.png"
-        },
-
-        {
-          name: "무스",
-          image: "images/무스.png"
-        },
-
-        {
-          name: "그라벨",
-          image: "images/그라벨.png"
-        },
-
-        {
-          name: "로프",
-          image: "images/로프.png"
-        },
-
-        {
-          name: "미르",
-          image: "images/미르.png"
-        },
-
-        {
-          name: "퍼퓨머",
-          image: "images/퍼퓨머.png"
-        },
-
-        {
-          name: "마터호른",
-          image: "images/마터호른.png"
-        },
-
-        {
-          name: "쿠오라",
-          image: "images/쿠오라.png"
-        },
-
-        {
-          name: "굼",
-          image: "images/굼.png"
-        },
-
-        {
-          name: "딥컬러",
-          image: "images/딥컬러.png"
-        },
-
-        {
-          name: "어스스피릿",
-          image: "images/어스스피릿.png"
-        },
-
-        {
-          name: "쇼",
-          image: "images/쇼.png"
-        },
-
-        {
-          name: "비헌터",
-          image: "images/비헌터.png"
-        },
-
-        {
-          name: "그레이",
-          image: "images/그레이.png"
-        },
-
-        {
-          name: "수수로",
-          image: "images/수수로.png"
-        },
-
-        {
-          name: "머틀",
-          image: "images/머틀.png"
-        },
-
-        {
-          name: "버메일",
-          image: "images/버메일.png"
-        },
-
-        {
-          name: "메이",
-          image: "images/메이.png"
-        },
-
-        {
-          name: "엠브리엘",
-          image: "images/엠브리엘.png"
-        },
-
-        {
-          name: "우타게",
-          image: "images/우타게.png"
-        },
-
-        {
-          name: "커터",
-          image: "images/커터.png"
-        },
-
-        {
-          name: "포덴코",
-          image: "images/포덴코.png"
-        },
-
-        {
-          name: "클릭",
-          image: "images/클릭.png"
-        },
-
-        {
-          name: "제이",
-          image: "images/제이.png"
-        },
-
-        {
-          name: "애시드드롭",
-          image: "images/애시드드롭.png"
-        },
-
-        {
-          name: "아렌",
-          image: "images/아렌.png"
-        },
-
-        {
-          name: "버블",
-          image: "images/버블.png"
-        },
-
-        {
-          name: "재키",
-          image: "images/재키.png"
-        },
-
-        {
-          name: "파인콘",
-          image: "images/파인콘.png"
-        },
-
-        {
-          name: "빈스토크",
-          image: "images/빈스토크.png"
-        },
-
-        {
-          name: "인디고",
-          image: "images/인디고.png"
-        },
-
-        {
-          name: "로베르타",
-          image: "images/로베르타.png"
-        },
-
-        {
-          name: "체스트넛",
-          image: "images/체스트넛.png"
-        },
-
-        {
-          name: "토터",
-          image: "images/토터.png"
-        },
-
-        {
-          name: "휴머스",
-          image: "images/휴머스.png"
-        },
-
-        {
-          name: "버던트",
-          image: "images/버던트.png"
-        },
-
-        {
-          name: "루토나다",
-          image: "images/루토나다.png"
-        },
-
-        {
-          name: "윈드스쿠트",
-          image: "images/윈드스쿠트.png"
-        },
-
-        {
-          name: "스네구로치카",
-          image: "images/스네구로치카.png"
-        }
-
-
-
+        "헤이즈", "기타노", "제시카", "메테오", "시라유키", "스캐빈저", "비그나",
+        "도베르만", "마토이마루", "프로스트리프", "무스", "그라벨", "로프", "미르",
+        "퍼퓨머", "마터호른", "쿠오라", "굼", "딥컬러", "어스스피릿", "쇼", "비헌터",
+        "그레이", "수수로", "머틀", "버메일", "메이", "엠브리엘", "우타게", "커터",
+        "포덴코", "클릭", "제이", "애시드드롭", "아렌", "버블", "재키", "파인콘",
+        "빈스토크", "인디고", "로베르타", "체스트넛", "토터", "휴머스", "버던트",
+        "루토나다", "윈드스쿠트", "스네구로치카"
       ],
 
-
-
       "3성": [
-
-        {
-          name: "팽",
-          image: "images/팽.png"
-        },
-
-        {
-          name: "바닐라",
-          image: "images/바닐라.png"
-        },
-
-        {
-          name: "플룸",
-          image: "images/플룸.png"
-        },
-        
-        {
-          name: "멜란사",
-          image: "images/멜란사.png"
-        },
-
-        {
-          name: "카디건",
-          image: "images/카디건.png"
-        },
-
-        {
-          name: "비글",
-          image: "images/비글.png"
-        },
-
-        {
-          name: "크루스",
-          image: "images/크루스.png"
-        },
-
-        {
-          name: "라바",
-          image: "images/라바.png"
-        },
-
-        {
-          name: "히비스커스",
-          image: "images/히비스커스.png"
-        },
-
-        {
-          name: "안셀",
-          image: "images/안셀.png"
-        },
-
-        {
-          name: "스튜어드",
-          image: "images/스튜어드.png"
-        },
-
-        {
-          name: "오키드",
-          image: "images/오키드.png"
-        },
-
-        {
-          name: "캐터펄트",
-          image: "images/캐터펄트.png"
-        },
-
-        {
-          name: "미드나이트",
-          image: "images/미드나이트.png"
-        },
-
-        {
-          name: "스팟",
-          image: "images/스팟.png"
-        },
-
-        {
-          name: "포푸카",
-          image: "images/포푸카.png"
-        }
-
+        "팽", "바닐라", "플룸", "멜란사", "카디건", "비글", "크루스", "라바",
+        "히비스커스", "안셀", "스튜어드", "오키드", "캐터펄트", "미드나이트", "스팟", "포푸카"
       ]
 
     };
 
+    const characters = {};
+
+    for (const rarity in characterNames) {
+      characters[rarity] = characterNames[rarity].map(name => ({
+        name: name,
+        image: "images/" + name + ".png"
+      }));
+    }
+
+
+    // =========================
+    // 배너 데이터
+    // =========================
+
     const banners = {
 
       banner1: {
-
         name: "영원히 울리는 선율",
-
-        pickup6: [
-          "아피아체레",
-          "트라고디아"
-        ],
-
-        pickup5: [
-          "티피",
-          "칸타빌레",
-          "샬렘"
-        ]
-
+        pickup6: ["아피아체레", "트라고디아"],
+        pickup5: ["티피", "칸타빌레", "샬렘"]
       },
 
-
       banner2: {
-
         name: "홍화만개",
-
-        pickup6: [
-          "총웨",
-          "티엔"
-        ],
-
-        pickup5: [
-          "레코드키퍼",
-          "레이즈",
-          "그레인버즈"
-        ]
-
+        pickup6: ["티엔", "총웨"],
+        pickup5: ["레코드키퍼", "레이즈", "그레인버즈"]
       },
 
       banner3: {
-
         name: "그리움의 의미",
-
-        pickup6: [
-          "베이",
-          "시에"
-        ],
-
-        pickup5: [
-          "레코드키퍼",
-          "레이즈",
-          "그레인버즈"
-        ]
-
+        pickup6: ["베이", "시에"],
+        pickup5: ["레코드키퍼", "레이즈", "그레인버즈"]
       },
 
       banner4: {
-
         name: "너와 나의 거리",
-
-        pickup6: [
-          "위",
-          "루"
-        ],
-
-        pickup5: [
-          "강 씨",
-          "서퍼",
-          "싱주"
-        ]
-
+        pickup6: ["위", "루"],
+        pickup5: ["강 씨", "서퍼", "싱주"]
       },
 
       banner5: {
-
         name: "눈한쪽가린여자스페셜헤드헌팅",
-
-        pickup6: [
-          "로고스",
-          "미오소티스"
-        ],
-
-        pickup5: [
-          "위스퍼레인",
-          "산탈라",
-          "오로라"
-        ]
-
+        pickup6: ["로고스", "미오소티스"],
+        pickup5: ["위스퍼레인", "산탈라", "오로라"]
       },
 
-
       banner6: {
-
         name: "달빛은 아직 지지 않고",
+        pickup6: ["우민", "왕"],
+        pickup5: ["그레인버즈", "라 플루마", "테킬라"]
+      },
 
-        pickup6: [
-          "우민",
-          "왕"
-        ],
-
-        pickup5: [
-          "그레인버즈",
-          "라 플루마",
-          "테킬라"
-        ]
-
+      banner7: {
+        name: "深秋殘夢 심추잔몽",
+        pickup6: ["리천", "슈"],
+        pickup5: ["완칭", "그레인버즈", "레코드키퍼"]
       }
-
-
 
     };
 
 
+    // =========================
+    // 배너 목록 그리기
+    // =========================
+
+    function renderBannerList() {
+
+      let html = "";
+      let i = 1;
+
+      for (const key in banners) {
+
+        const b = banners[key];
+        const num = String(i).padStart(2, "0");
+
+        html += `
+          <button class="banner-card cut" onclick="selectBanner('${key}')">
+            <div class="banner-top">
+              <span class="banner-index en">${num}</span>
+              <span class="banner-tag en">LIMITED HEADHUNTING</span>
+            </div>
+            <div class="banner-body">
+              <div class="banner-name">${b.name}</div>
+              <div class="pickup-row six">
+                <span class="rank">★6</span>
+                <span class="names">${b.pickup6.join(" · ")}</span>
+              </div>
+              <div class="pickup-row five">
+                <span class="rank">★5</span>
+                <span class="names">${b.pickup5.join(" · ")}</span>
+              </div>
+            </div>
+            <span class="enter en">ENTER →</span>
+          </button>
+        `;
+
+        i++;
+      }
+
+      document.getElementById("banner-list").innerHTML = html;
+    }
+
 
     // =========================
-    // 픽업 캐릭터
+    // 현재 6성 확률
     // =========================
 
-    let pickup6 = [];
+    function getSixRate() {
 
-    let pickup5 = [];
+      let sixRate = 0.02;
 
+      // 반천장
+      if (pityStack >= 50) {
+        sixRate = 0.02 + ((pityStack - 49) * 0.02);
+      }
+
+      return Math.min(sixRate, 1);
+    }
 
 
     // =========================
@@ -1557,212 +1091,94 @@
 
     function drawCharacter() {
 
-      let sixRate = 0.02;
-
-
-
-      // 반천장
-      if (pityStack >= 50) {
-
-        sixRate =
-          0.02 + ((pityStack - 49) * 0.02);
-
-      }
-
-      if (sixRate > 1) {
-
-        sixRate = 1;
-
-      }
-
-
-
+      const sixRate = getSixRate();
       const rand = Math.random();
-
       let rarity = "";
-
-
 
       // 희귀도 결정
       if (rand < sixRate) {
-
         rarity = "6성";
-
       }
-
       else if (rand < sixRate + 0.08) {
-
         rarity = "5성";
-
       }
-
       else if (rand < sixRate + 0.58) {
-
         rarity = "4성";
-
       }
-
       else {
-
         rarity = "3성";
-
       }
-
-
 
       // 반천장 처리
       if (rarity == "6성") {
-
         pityStack = 0;
-
       }
-
       else {
-
         pityStack++;
-
       }
 
-      updatePity();
-
-
-
-      // =========================
       // 픽업 시스템
-      // =========================
-
       let list = [];
+      let isPickup = false;
 
+      if (rarity == "6성" || rarity == "5성") {
 
+        const pickupList = rarity == "6성" ? pickup6 : pickup5;
+        isPickup = Math.random() < 0.5;
 
-      // 6성
-      if (rarity == "6성") {
-
-        const pickupChance = Math.random();
-
-        if (pickupChance < 0.5) {
-
-          list = characters["6성"].filter(
-            character =>
-              pickup6.includes(character.name)
-          );
-
-        }
-
-        else {
-
-          list = characters["6성"].filter(
-            character =>
-              !pickup6.includes(character.name)
-          );
-
-        }
-
+        list = characters[rarity].filter(character =>
+          isPickup
+            ? pickupList.includes(character.name)
+            : !pickupList.includes(character.name)
+        );
       }
-
-
-
-      // 5성
-      else if (rarity == "5성") {
-
-        const pickupChance = Math.random();
-
-        if (pickupChance < 0.5) {
-
-          list = characters["5성"].filter(
-            character =>
-              pickup5.includes(character.name)
-          );
-
-        }
-
-        else {
-
-          list = characters["5성"].filter(
-            character =>
-              !pickup5.includes(character.name)
-          );
-
-        }
-
-      }
-
-
-
-      // 4성 / 3성
       else {
-
         list = characters[rarity];
-
       }
-
-
 
       // 랜덤 선택
-      const index =
-        Math.floor(Math.random() * list.length);
-
-      const character = list[index];
-
-
+      const character = list[Math.floor(Math.random() * list.length)];
 
       // 수집 기록
       if (rarity == "6성") {
-
         addCollection(collection6, character.name);
-
       }
-
       else if (rarity == "5성") {
-
         addCollection(collection5, character.name);
-
       }
 
-
-
-      // 색상 클래스
-      let className = "";
-
-      if (rarity == "6성") {
-
-        className = "six";
-
-      }
-
-      else if (rarity == "5성") {
-
-        className = "five";
-
-      }
-
-      else if (rarity == "4성") {
-
-        className = "four";
-
-      }
-
-      else {
-
-        className = "three";
-
-      }
-
-
-
-      // 결과 출력
-      return `
-
-        <div class="card ${className}">
-
-          <img src="${character.image}">
-
-        </div>
-
-      `;
-
+      return { rarity, character, isPickup };
     }
 
+
+    // =========================
+    // 결과 카드 만들기
+    // =========================
+
+    function renderCard(result, order) {
+
+      const star = parseInt(result.rarity);
+      const className = "r" + star;
+      const delay = order * 0.07;
+
+      const tag = result.isPickup
+        ? `<div class="pickup-tag en">PICK UP</div>`
+        : "";
+
+      return `
+        <div class="card ${className}" style="animation-delay:${delay}s">
+          <img src="${result.character.image}"
+               alt="${result.character.name}"
+               onerror="this.style.display='none'; this.parentElement.classList.add('no-img');">
+          <div class="fallback">${result.character.name}</div>
+          ${tag}
+          <div class="card-info">
+            <div class="stars">${"★".repeat(star)}</div>
+            <div class="name">${result.character.name}</div>
+          </div>
+        </div>
+      `;
+    }
 
 
     // =========================
@@ -1772,230 +1188,166 @@
     function addCollection(list, character) {
 
       for (let item of list) {
-
         if (item.name == character) {
-
           item.count++;
-
           return;
-
         }
-
       }
 
-      list.push({
-
-        name: character,
-
-        count: 1
-
-      });
-
+      list.push({ name: character, count: 1 });
     }
-
 
 
     // =========================
     // 수집 목록 업데이트
     // =========================
 
+    function renderCollectionList(list, pickupList) {
+
+      if (list.length == 0) {
+        return `<div class="none">아직 획득한 오퍼레이터가 없습니다</div>`;
+      }
+
+      let html = "";
+
+      for (let item of list) {
+        const pickupClass = pickupList.includes(item.name) ? "is-pickup" : "";
+        html += `
+          <div class="item ${pickupClass}">
+            <span class="nm">${item.name}</span>
+            <span class="cnt">×${item.count}</span>
+          </div>
+        `;
+      }
+
+      return html;
+    }
+
     function updateCollection() {
 
-      let sixHTML = "";
-
-      for (let item of collection6) {
-
-        sixHTML += `
-          <div>
-            ${item.name} x${item.count}
-          </div>
-        `;
-
-      }
-
-      if (sixHTML == "") {
-
-        sixHTML = "없음";
-
-      }
-
       document.getElementById("six-list").innerHTML =
-        sixHTML;
-
-
-
-      let fiveHTML = "";
-
-      for (let item of collection5) {
-
-        fiveHTML += `
-          <div>
-            ${item.name} x${item.count}
-          </div>
-        `;
-
-      }
-
-      if (fiveHTML == "") {
-
-        fiveHTML = "없음";
-
-      }
+        renderCollectionList(collection6, pickup6);
 
       document.getElementById("five-list").innerHTML =
-        fiveHTML;
-
+        renderCollectionList(collection5, pickup5);
     }
 
 
-
     // =========================
-    // 횟수 업데이트
+    // 횟수 / 반천장 표시
     // =========================
 
     function updateCount() {
-
-      document.getElementById("count").innerText =
-        "총 뽑기 : " + totalCount;
-
+      document.getElementById("count").innerText = totalCount;
     }
-
-
-
-    // =========================
-    // 반천장 표시
-    // =========================
 
     function updatePity() {
 
-      document.getElementById("pity").innerText =
-        "반천장 : " + pityStack;
+      document.getElementById("pity").innerText = pityStack;
 
+      const rate = getSixRate();
+      document.getElementById("pity-rate").innerText =
+        Math.round(rate * 100) + "%";
+
+      // 98회째에 확률 100%
+      const fill = document.getElementById("pity-fill");
+      fill.style.width = Math.min(pityStack / 98 * 100, 100) + "%";
+      fill.classList.toggle("active", pityStack >= 50);
     }
 
 
-
     // =========================
-    // 1회 뽑기
-    // =========================
-
-    function gacha() {
-
-      totalCount++;
-
-      updateCount();
-
-      const result = drawCharacter();
-
-      updateCollection();
-
-      document.getElementById("result").innerHTML =
-        result;
-
-    }
-
-
-
-    // =========================
-    // 10회 뽑기
+    // 뽑기
     // =========================
 
-    function gacha10() {
+    function pull(times) {
 
-      let results = "";
+      let html = "";
 
-      for (let i = 0; i < 10; i++) {
-
+      for (let i = 0; i < times; i++) {
         totalCount++;
-
-        results += drawCharacter();
-
+        html += renderCard(drawCharacter(), i);
       }
 
       updateCount();
-
+      updatePity();
       updateCollection();
 
-      document.getElementById("result").innerHTML =
-        results;
-
+      document.getElementById("result").innerHTML = html;
     }
 
+    function gacha() {
+      pull(1);
+    }
+
+    function gacha10() {
+      pull(10);
+    }
 
 
     // =========================
     // 초기화
     // =========================
 
+    function showEmptyResult(message) {
+      document.getElementById("result").innerHTML = `
+        <div class="empty">
+          <span class="en">STANDBY</span>
+          ${message}
+        </div>
+      `;
+    }
+
     function resetGacha() {
 
       totalCount = 0;
-
       pityStack = 0;
-
       collection6 = [];
-
       collection5 = [];
 
       updateCount();
-
       updatePity();
-
       updateCollection();
 
-      document.getElementById("result").innerHTML =
-        "결과가 초기화되었습니다.";
-
+      showEmptyResult("헤드헌팅 결과가 여기에 표시됩니다.");
     }
 
+
+    // =========================
+    // 화면 전환
+    // =========================
 
     function selectBanner(bannerName) {
 
       const banner = banners[bannerName];
 
       pickup6 = banner.pickup6;
-
       pickup5 = banner.pickup5;
 
       resetGacha();
 
-
-
       // 현재 픽업 표시
-      document.getElementById("current-banner")
-        .innerText =
+      document.getElementById("current-banner-name").innerText = banner.name;
 
-        "현재 픽업 : "
-        + banner.name
+      document.getElementById("pickup-info").innerHTML = `
+        <span class="six">★6 ${banner.pickup6.join(" · ")}</span><br>
+        <span class="five">★5 ${banner.pickup5.join(" · ")}</span>
+      `;
 
+      document.getElementById("banner-screen").style.display = "none";
+      document.getElementById("gacha-screen").style.display = "block";
 
-
-      // 화면 전환
-      document.getElementById("banner-screen")
-        .style.display = "none";
-
-      document.getElementById("notice-box").style.display = "none";
-
-
-      document.getElementById("gacha-screen")
-        .style.display = "block";
-
+      window.scrollTo(0, 0);
     }
-
 
     function goToBannerSelect() {
 
-      document.getElementById("gacha-screen")
-        .style.display = "none";
-
-      document.getElementById("notice-box").style.display = "block";
-
-
-      document.getElementById("banner-screen")
-        .style.display = "block";
-
+      document.getElementById("gacha-screen").style.display = "none";
+      document.getElementById("banner-screen").style.display = "block";
     }
 
+
+    renderBannerList();
 
   </script>
 
