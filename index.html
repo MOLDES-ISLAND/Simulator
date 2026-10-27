@@ -1171,11 +1171,11 @@
               <div class="banner-name">${b.name}</div>
               <div class="pickup-row six">
                 <span class="rank">★6</span>
-                <span class="names">${b.pickup6.join(" · ") || "픽업 없음"}</span>
+                <span class="names">${b.pickup6.join(" · ") || " - "}</span>
               </div>
               <div class="pickup-row five">
                 <span class="rank">★5</span>
-                <span class="names">${b.pickup5.join(" · ") || "픽업 없음"}</span>
+                <span class="names">${b.pickup5.join(" · ") || " - "}</span>
               </div>
             </div>
             <span class="enter en">ENTER →</span>
@@ -1451,8 +1451,8 @@
       document.getElementById("current-banner-name").innerText = banner.name;
 
       document.getElementById("pickup-info").innerHTML = `
-        <span class="six">★6 ${banner.pickup6.join(" · ") || "픽업 없음"}</span><br>
-        <span class="five">★5 ${banner.pickup5.join(" · ") || "픽업 없음"}</span>
+        <span class="six">★6 ${banner.pickup6.join(" · ") || " - "}</span><br>
+        <span class="five">★5 ${banner.pickup5.join(" · ") || " - "}</span>
       `;
 
       document.getElementById("banner-screen").style.display = "none";
