@@ -816,11 +816,11 @@
         <div id="notice-content">
           ■ 최종 업데이트 : 261027 <br>
           ■ 업데이트 사항 : <br>
-          &nbsp;&nbsp;- 박사 헤드헌팅 추가 (우측 상단) <br>
-          &nbsp;&nbsp;- 새로운 픽업 배너 추가 <br>
-          &nbsp;&nbsp;- UI 디자인 리뉴얼 <br>
+          &nbsp;&nbsp;- 새로운 픽업 배너 잔뜩 추가 <br>
+          &nbsp;&nbsp;- 박사 헤드헌팅 배너 추가 <br>
           ■ 버그 발견 시 @vosxjawhgdk 로 제보 부탁드립니다. <br>
-          ■ 테스트 버전입니다. 가볍게 즐겨주세요!
+          ■ 직접 쓴 코드를 기반으로 AI에게 코드 정리와 UI 개편만 부탁했습니다. <br>
+          ■ 그림 관련 학습은 일절 없습니다만, AI의 사용이 불편하시다면 사용을 재고해주세요. 가볍게 즐겨주세요! <br>
         </div>
 
       </div>
@@ -963,7 +963,8 @@
         "아스카론", "로고스", "울피아누스", "나란투야", "님프", "비나 빅토리아",
         "불피스폴리아", "쏜즈 더 로드스타", "블레이즈 디 이그나이팅 스파크", "엔텔레키아",
         "네크라스", "Mon3tr", "르무엔", "레이즈 더 썬더브링어", "하루카", "만트라",
-        "프라마닉스 더 프레리타", "슈", "리천", "연우", "박사", "클라우드샷", "미즈키"
+        "프라마닉스 더 프레리타", "슈", "리천", "연우", "박사", "클라우드샷", "미즈키",
+        "실버애쉬 더 레인프로스트", "에이든", "유진"
       ],
 
       "5성": [
@@ -976,7 +977,7 @@
         "테크노", "서퍼", "노웰", "울페나이트", "알라나", "그레이스베어러", "티피",
         "레코드키퍼", "키치세이", "베토치키", "스노우헌터", "싱주", "강 씨", "레이즈",
         "샬렘", "델핀", "오로라", "완칭", "지에윈", "니어", "위슬래시", "하나비",
-        "하이모어", "안드레아나"
+        "하이모어", "안드레아나", "프란카", "쉐라", "프라마닉스", "클리프하트", "마렐라"
       ],
 
       "4성": [
@@ -1052,6 +1053,12 @@
         name: "深秋殘夢 심추잔몽",
         pickup6: ["슈", "리천"],
         pickup5: ["완칭", "그레인버즈", "레코드키퍼"]
+      },
+
+      banner8: {
+        name: "맞물린 궤적",
+        pickup6: [],
+        pickup5: ["델핀", "마렐라"]
       }
 
     };
@@ -1079,7 +1086,19 @@
         name: "경운수월",
         pickup6: ["미즈키", "클라우드샷"],
         pickup5: ["하나비", "하이모어", "안드레아나"]
-      }
+      },
+
+      doctor4: {
+        name: "설경의 초대",
+        pickup6: ["에이든", "실버애쉬 더 레인프로스트"],
+        pickup5: ["프라마닉스", "클리프하트", "쉐라"]
+      },
+
+      doctor5: {
+        name: "Ever Bound 에버 바운드",
+        pickup6: ["유진", "무에나"],
+        pickup5: ["프로바이조", "니어", "프란카"]
+      }      
 
     };
 
@@ -1091,7 +1110,7 @@
     let isDoctorMode = false;
 
     // 박사 헌팅 모드에서만 나오는 캐릭터
-    const doctorOnly = ["박사", "연우", "클라우드샷"];
+    const doctorOnly = ["박사", "연우", "클라우드샷", "에이든", "유진"];
 
     function currentBanners() {
       return isDoctorMode ? doctorBanners : banners;
@@ -1152,11 +1171,11 @@
               <div class="banner-name">${b.name}</div>
               <div class="pickup-row six">
                 <span class="rank">★6</span>
-                <span class="names">${b.pickup6.join(" · ")}</span>
+                <span class="names">${b.pickup6.join(" · ") || "픽업 없음"}</span>
               </div>
               <div class="pickup-row five">
                 <span class="rank">★5</span>
-                <span class="names">${b.pickup5.join(" · ")}</span>
+                <span class="names">${b.pickup5.join(" · ") || "픽업 없음"}</span>
               </div>
             </div>
             <span class="enter en">ENTER →</span>
@@ -1226,7 +1245,7 @@
       if (rarity == "6성" || rarity == "5성") {
 
         const pickupList = rarity == "6성" ? pickup6 : pickup5;
-        isPickup = Math.random() < 0.5;
+        isPickup = pickupList.length > 0 && Math.random() < 0.5;
 
         list = getPool(rarity).filter(character =>
           isPickup
@@ -1432,8 +1451,8 @@
       document.getElementById("current-banner-name").innerText = banner.name;
 
       document.getElementById("pickup-info").innerHTML = `
-        <span class="six">★6 ${banner.pickup6.join(" · ")}</span><br>
-        <span class="five">★5 ${banner.pickup5.join(" · ")}</span>
+        <span class="six">★6 ${banner.pickup6.join(" · ") || "픽업 없음"}</span><br>
+        <span class="five">★5 ${banner.pickup5.join(" · ") || "픽업 없음"}</span>
       `;
 
       document.getElementById("banner-screen").style.display = "none";
