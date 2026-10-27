@@ -11,9 +11,7 @@
 
   <style>
 
-    /* =========================
-       색상 / 공통 변수
-    ========================= */
+
     :root {
       --bg: #121212;
       --panel: #1c1c1c;
@@ -31,7 +29,43 @@
       --cut: 14px;
     }
 
+
+    body.doctor {
+      --accent: #33d6d6;
+    }
+
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    #mode-button {
+      --cut: 10px;
+      min-width: 120px;
+      text-align: center;
+      padding: 9px 20px 8px;
+      background: transparent;
+      border: none;
+      box-shadow: inset 0 0 0 1px var(--accent);
+      color: var(--accent);
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    #mode-button:hover {
+      background: var(--accent);
+      color: #111;
+    }
+
     * { box-sizing: border-box; }
+
+    /* 배너 개수에 따라 스크롤바가 생기거나 사라져도 화면이 좌우로 밀리지 않게 */
+    html {
+      overflow-y: scroll;
+    }
 
     body {
       margin: 0;
@@ -54,7 +88,6 @@
       letter-spacing: 0.06em;
     }
 
-    /* 노란/검정 경고 줄무늬 */
     .hazard {
       height: 6px;
       background: repeating-linear-gradient(
@@ -64,7 +97,6 @@
       );
     }
 
-    /* 모서리 잘린 패널 */
     .cut {
       clip-path: polygon(
         0 0,
@@ -76,9 +108,7 @@
       );
     }
 
-    /* =========================
-       상단 헤더
-    ========================= */
+
     header {
       background: #0c0c0c;
       border-bottom: 1px solid var(--line);
@@ -100,7 +130,7 @@
       color: #fff;
     }
 
-    .title-block .title span {
+    .title-block .title .accent {
       color: var(--accent);
     }
 
@@ -129,7 +159,7 @@
       padding: 28px 24px 60px;
     }
 
-    /* 섹션 라벨 */
+
     .section-label {
       display: flex;
       align-items: center;
@@ -160,9 +190,8 @@
       background: var(--accent);
     }
 
-    /* =========================
-       배너 선택 화면
-    ========================= */
+
+
     #banner-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -252,7 +281,7 @@
 
     .banner-card:hover .enter { opacity: 1; }
 
-    /* 공지사항 */
+
     #notice-box {
       margin-top: 36px;
       background: var(--panel);
@@ -284,9 +313,7 @@
       color: #cfcfcf;
     }
 
-    /* =========================
-       뽑기 화면
-    ========================= */
+
     #gacha-screen { display: none; }
 
     #gacha-topbar {
@@ -391,7 +418,7 @@
       margin-bottom: 4px;
     }
 
-    /* 카드 */
+
     .card {
       --rc: var(--r3);
       position: relative;
@@ -408,7 +435,7 @@
     .card.r4 { --rc: var(--r4); }
     .card.r3 { --rc: var(--r3); }
 
-    /* 희귀도 빛 번짐 */
+
     .card::before {
       content: "";
       position: absolute;
@@ -509,7 +536,7 @@
       60%, 100% { transform: translateX(100%); }
     }
 
-    /* 뽑기 버튼 */
+
     #gacha-buttons {
       display: flex;
       justify-content: flex-end;
@@ -553,7 +580,7 @@
       color: #111;
     }
 
-    /* 오른쪽 패널 */
+
     #right-panel {
       background: var(--panel);
       border: 1px solid var(--line);
@@ -618,7 +645,7 @@
       border: 1px solid var(--line);
     }
 
-    /* 반천장 시작 지점 표시 */
+
     .pity-bar .marker {
       position: absolute;
       top: -4px;
@@ -719,9 +746,9 @@
     #six-list .item .nm { color: var(--r6); }
     #five-list .item .nm { color: var(--r5); }
 
-    /* =========================
-       반응형
-    ========================= */
+
+
+
     @media (max-width: 1000px) {
       #main-container {
         grid-template-columns: 1fr;
@@ -752,12 +779,15 @@
   <header>
     <div class="header-inner">
       <div class="title-block">
-        <div class="title en">HEAD<span>HUNTING</span></div>
-        <div class="subtitle">헤드헌팅 시뮬레이터</div>
+        <div class="title en"><span id="title-prefix">HEAD</span><span class="accent">HUNTING</span></div>
+        <div class="subtitle" id="subtitle">헤드헌팅 시뮬레이터</div>
       </div>
-      <div class="header-code en">
-        RECRUITMENT SYSTEM<br>
-        <b>STATUS : ONLINE</b>
+      <div class="header-right">
+        <button id="mode-button" class="cut en" onclick="toggleMode()">DOCTOR</button>
+        <div class="header-code en">
+          RECRUITMENT SYSTEM<br>
+          <b>STATUS : ONLINE</b>
+        </div>
       </div>
     </div>
     <div class="hazard"></div>
@@ -784,13 +814,13 @@
         </div>
 
         <div id="notice-content">
-          ■ 최종 업데이트 : 261026 <br>
+          ■ 최종 업데이트 : 261027 <br>
           ■ 업데이트 사항 : <br>
-          &nbsp;&nbsp;- 새로운 픽업 배너 [ 深秋殘夢 심추잔몽 ] 추가 <br>
-          &nbsp;&nbsp;- UI 디자인 리뉴얼 <br>
+          &nbsp;&nbsp;- 박사 헤드헌팅 추가 (우측 상단) <br>
+          &nbsp;&nbsp;- 새로운 박사 헤드헌팅 픽업 배너 추가 <br>
+          &nbsp;&nbsp;- (261026) UI 디자인 리뉴얼 <br>
           ■ 버그 발견 시 @vosxjawhgdk 로 제보 부탁드립니다. <br>
-          ■ 테스트 버전입니다. 가볍게 즐겨주세요! <br>
-          ■ 직접 쓴 코드를 기반으로 AI에게 코드 정리를 부탁하였습니다. AI 사용에 불편하신 분들은 사용을 재고해주세요.
+          ■ 테스트 버전입니다. 가볍게 즐겨주세요!
         </div>
 
       </div>
@@ -830,12 +860,12 @@
           <div id="gacha-buttons">
 
             <button class="pull-btn single cut" onclick="gacha()">
-              <span class="en">HEADHUNT ×1</span>
+              <span class="en"><span class="hunt-word">HEADHUNT</span> ×1</span>
               <span class="label">1회 헤드헌팅</span>
             </button>
 
             <button class="pull-btn multi cut" onclick="gacha10()">
-              <span class="en">HEADHUNT ×10</span>
+              <span class="en"><span class="hunt-word">HEADHUNT</span> ×10</span>
               <span class="label">10회 헤드헌팅</span>
             </button>
 
@@ -933,7 +963,7 @@
         "아스카론", "로고스", "울피아누스", "나란투야", "님프", "비나 빅토리아",
         "불피스폴리아", "쏜즈 더 로드스타", "블레이즈 디 이그나이팅 스파크", "엔텔레키아",
         "네크라스", "Mon3tr", "르무엔", "레이즈 더 썬더브링어", "하루카", "만트라",
-        "프라마닉스 더 프레리타", "슈", "리천"
+        "프라마닉스 더 프레리타", "슈", "리천", "연우", "박사"
       ],
 
       "5성": [
@@ -945,7 +975,7 @@
         "팽 더 파이어 샤픈드", "루실라", "샌드레코너", "미틈", "보빙", "피구리노",
         "테크노", "서퍼", "노웰", "울페나이트", "알라나", "그레이스베어러", "티피",
         "레코드키퍼", "키치세이", "베토치키", "스노우헌터", "싱주", "강 씨", "레이즈",
-        "샬렘", "델핀", "오로라", "완칭"
+        "샬렘", "델핀", "오로라", "완칭", "지에윈", "니어", "위슬래시"
       ],
 
       "4성": [
@@ -989,7 +1019,7 @@
 
       banner2: {
         name: "홍화만개",
-        pickup6: ["티엔", "총웨"],
+        pickup6: ["총웨", "티엔"],
         pickup5: ["레코드키퍼", "레이즈", "그레인버즈"]
       },
 
@@ -1019,11 +1049,73 @@
 
       banner7: {
         name: "深秋殘夢 심추잔몽",
-        pickup6: ["리천", "슈"],
+        pickup6: ["슈", "리천"],
         pickup5: ["완칭", "그레인버즈", "레코드키퍼"]
       }
 
     };
+
+
+    // =========================
+    // 박사 헌팅 배너 데이터
+    // =========================
+
+    const doctorBanners = {
+
+      doctor1: {
+        name: "즐거운 인연",
+        pickup6: ["좌락", "연우"],
+        pickup5: ["지에윈", "레코드키퍼", "레이즈"]
+      },
+
+      doctor2: {
+        name: "우마XX메 로도스 더비",
+        pickup6: ["박사", "무에나"],
+        pickup5: ["니어", "위슬래시", "프로바이조"]
+      }
+
+    };
+
+
+    // =========================
+    // 모드 (오퍼레이터 / 박사)
+    // =========================
+
+    let isDoctorMode = false;
+
+    // 박사 헌팅 모드에서만 나오는 캐릭터
+    const doctorOnly = ["박사", "연우"];
+
+    function currentBanners() {
+      return isDoctorMode ? doctorBanners : banners;
+    }
+
+    function getPool(rarity) {
+      if (isDoctorMode) {
+        return characters[rarity];
+      }
+      return characters[rarity].filter(c => !doctorOnly.includes(c.name));
+    }
+
+    function toggleMode() {
+
+      isDoctorMode = !isDoctorMode;
+
+      document.body.classList.toggle("doctor", isDoctorMode);
+
+      document.getElementById("mode-button").innerText =
+        isDoctorMode ? "OPERATOR" : "DOCTOR";
+
+      document.getElementById("title-prefix").innerText =
+        isDoctorMode ? "DR." : "HEAD";
+
+      document.querySelectorAll(".hunt-word").forEach(el => {
+        el.innerText = isDoctorMode ? "DOCTORHUNT" : "HEADHUNT";
+      });
+
+      renderBannerList();
+      goToBannerSelect();
+    }
 
 
     // =========================
@@ -1035,16 +1127,19 @@
       let html = "";
       let i = 1;
 
-      for (const key in banners) {
+      const list = currentBanners();
+      const tag = "LIMITED";
 
-        const b = banners[key];
+      for (const key in list) {
+
+        const b = list[key];
         const num = String(i).padStart(2, "0");
 
         html += `
           <button class="banner-card cut" onclick="selectBanner('${key}')">
             <div class="banner-top">
               <span class="banner-index en">${num}</span>
-              <span class="banner-tag en">LIMITED HEADHUNTING</span>
+              <span class="banner-tag en">${tag}</span>
             </div>
             <div class="banner-body">
               <div class="banner-name">${b.name}</div>
@@ -1126,14 +1221,14 @@
         const pickupList = rarity == "6성" ? pickup6 : pickup5;
         isPickup = Math.random() < 0.5;
 
-        list = characters[rarity].filter(character =>
+        list = getPool(rarity).filter(character =>
           isPickup
             ? pickupList.includes(character.name)
             : !pickupList.includes(character.name)
         );
       }
       else {
-        list = characters[rarity];
+        list = getPool(rarity);
       }
 
       // 랜덤 선택
@@ -1319,7 +1414,7 @@
 
     function selectBanner(bannerName) {
 
-      const banner = banners[bannerName];
+      const banner = currentBanners()[bannerName];
 
       pickup6 = banner.pickup6;
       pickup5 = banner.pickup5;
